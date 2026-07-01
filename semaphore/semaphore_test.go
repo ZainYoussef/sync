@@ -56,6 +56,39 @@ func TestWeightedPanic(t *testing.T) {
 	w.Release(1)
 }
 
+func TestWeightedNegativeWeightPanic(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	w := semaphore.NewWeighted(1)
+	func() {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("Acquire with negative weight did not panic")
+			}
+		}()
+		w.Acquire(ctx, -1)
+	}()
+
+	func() {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("TryAcquire with negative weight did not panic")
+			}
+		}()
+		w.TryAcquire(-1)
+	}()
+
+	func() {
+		defer func() {
+			if recover() == nil {
+				t.Fatal("Release with negative weight did not panic")
+			}
+		}()
+		w.Release(-1)
+	}()
+}
+
 func TestWeightedTryAcquire(t *testing.T) {
 	t.Parallel()
 
